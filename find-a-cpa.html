@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Find a CPA — CPA Canada</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Source+Serif+4:opsz,wght@8..60,400;8..60,500;8..60,600&family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/main.css">
+</head>
+<body>
+
+<div class="util-bar">
+  <div class="wrap">
+    <div class="util-links">
+      <a href="find-a-cpa.html">Find a CPA</a>
+      <a href="#">News &amp; insights</a>
+      <a href="#">Contact</a>
+    </div>
+    <a href="#" class="lang-toggle">FR / EN</a>
+  </div>
+</div>
+
+<header class="main">
+  <div class="wrap nav-row">
+    <a href="index.html" class="logo">
+      <span class="mark">CPA</span>
+      CPA Canada
+    </a>
+    <nav class="primary">
+      <a href="index.html#">Become a CPA</a>
+      <a href="login.html">Members</a>
+      <a href="#">PD &amp; events</a>
+      <a href="#">Standards</a>
+      <a href="find-a-cpa.html" class="active">Resources</a>
+    </nav>
+    <div class="header-actions">
+      <button class="search-icon-btn" aria-label="Search">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#0F2A3D" stroke-width="2"><circle cx="11" cy="11" r="7"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+      </button>
+      <a href="login.html" class="btn">Log in</a>
+      <button class="btn solid">Join CPA Canada</button>
+    </div>
+  </div>
+</header>
+
+<div class="wrap">
+  <div class="breadcrumb">
+    <a href="index.html">Home</a><span class="sep">/</span><span class="current">Find a CPA</span>
+  </div>
+</div>
+
+<section class="page-hero">
+  <div class="wrap">
+    <span class="hero-eyebrow">Public &amp; firms</span>
+    <h1>Find a licensed CPA near you</h1>
+    <p class="lede">Search by city, province, or postal code, then filter by specialty.</p>
+  </div>
+</section>
+
+<div class="wrap" style="padding-bottom:64px;">
+  <div class="search-panel">
+    <div class="search-row">
+      <input type="text" id="searchInput" placeholder="City, province, or postal code (try Toronto, Calgary, Halifax)">
+      <button id="searchBtn">Search</button>
+    </div>
+    <div class="filter-row" id="filterRow">
+      <div class="filter-chip active" data-filter="all">All specialties</div>
+      <div class="filter-chip" data-filter="tax">Tax</div>
+      <div class="filter-chip" data-filter="audit">Audit &amp; assurance</div>
+      <div class="filter-chip" data-filter="advisory">Advisory</div>
+      <div class="filter-chip" data-filter="smallbusiness">Small business</div>
+    </div>
+  </div>
+
+  <div id="resultsCount" style="font-size:13px; color:var(--slate); margin-bottom:14px;"></div>
+  <div class="cpa-results" id="resultsList"></div>
+</div>
+
+<footer>
+  <div class="wrap">
+    <div class="bottom-row" style="border-top:none; padding-top:0;">
+      <span>© 2026 Chartered Professional Accountants of Canada</span>
+      <span>Redesign prototype — built for internship assignment review</span>
+    </div>
+  </div>
+</footer>
+
+<script src="js/common.js"></script>
+<script>
+  (function () {
+    var cpas = [
+      { name: 'A. Mercier, CPA', city: 'Montreal', province: 'QC', specialty: 'tax', label: 'Tax', dist: '1.2 km' },
+      { name: 'R. Chen, CPA', city: 'Toronto', province: 'ON', specialty: 'audit', label: 'Audit & assurance', dist: '0.8 km' },
+      { name: 'S. Okafor, CPA', city: 'Toronto', province: 'ON', specialty: 'advisory', label: 'Advisory', dist: '2.1 km' },
+      { name: 'D. Singh, CPA', city: 'Calgary', province: 'AB', specialty: 'smallbusiness', label: 'Small business', dist: '0.5 km' },
+      { name: 'M. Tremblay, CPA', city: 'Quebec City', province: 'QC', specialty: 'tax', label: 'Tax', dist: '3.4 km' },
+      { name: 'J. MacDonald, CPA', city: 'Halifax', province: 'NS', specialty: 'audit', label: 'Audit & assurance', dist: '1.0 km' },
+      { name: 'P. Nguyen, CPA', city: 'Vancouver', province: 'BC', specialty: 'advisory', label: 'Advisory', dist: '1.7 km' },
+      { name: 'K. Whitehorse, CPA', city: 'Winnipeg', province: 'MB', specialty: 'smallbusiness', label: 'Small business', dist: '2.9 km' },
+      { name: 'L. Bouchard, CPA', city: 'Montreal', province: 'QC', specialty: 'advisory', label: 'Advisory', dist: '4.0 km' },
+      { name: 'T. Roy, CPA', city: 'Calgary', province: 'AB', specialty: 'tax', label: 'Tax', dist: '2.3 km' }
+    ];
+
+    var activeFilter = 'all';
+    var query = '';
+
+    function initials(name) {
+      var parts = name.replace(', CPA', '').split(' ');
+      return (parts[0][0] + (parts[1] ? parts[1][0] : '')).toUpperCase();
+    }
+
+    function render() {
+      var list = document.getElementById('resultsList');
+      var count = document.getElementById('resultsCount');
+      var q = query.trim().toLowerCase();
+
+      var filtered = cpas.filter(function (c) {
+        var matchesFilter = activeFilter === 'all' || c.specialty === activeFilter;
+        var matchesQuery = q === '' || c.city.toLowerCase().indexOf(q) !== -1 || c.province.toLowerCase().indexOf(q) !== -1;
+        return matchesFilter && matchesQuery;
+      });
+
+      count.textContent = filtered.length + (filtered.length === 1 ? ' CPA found' : ' CPAs found');
+
+      if (filtered.length === 0) {
+        list.innerHTML = '<div class="empty-state">No CPAs match that search. Try a different city or clear the specialty filter.</div>';
+        return;
+      }
+
+      list.innerHTML = filtered.map(function (c) {
+        return '<div class="cpa-result">' +
+          '<div class="who">' +
+            '<div class="avatar">' + initials(c.name) + '</div>' +
+            '<div>' +
+              '<h4>' + c.name + '</h4>' +
+              '<div class="meta">' + c.label + ' &middot; ' + c.city + ', ' + c.province + '</div>' +
+            '</div>' +
+          '</div>' +
+          '<div class="dist">' + c.dist + '</div>' +
+        '</div>';
+      }).join('');
+    }
+
+    document.getElementById('searchBtn').addEventListener('click', function () {
+      query = document.getElementById('searchInput').value;
+      render();
+    });
+    document.getElementById('searchInput').addEventListener('keypress', function (e) {
+      if (e.key === 'Enter') { query = e.target.value; render(); }
+    });
+    document.getElementById('filterRow').addEventListener('click', function (e) {
+      var chip = e.target.closest('.filter-chip');
+      if (!chip) return;
+      document.querySelectorAll('.filter-chip').forEach(function (c) { c.classList.remove('active'); });
+      chip.classList.add('active');
+      activeFilter = chip.getAttribute('data-filter');
+      render();
+    });
+
+    render();
+  })();
+</script>
+</body>
+</html>
